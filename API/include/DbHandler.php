@@ -270,6 +270,19 @@ class DbHandler {
         return $poubelles;
     }
 
+        /**
+     * Fetching all user poubelles for date
+     * @param String $user_id id of the user
+     */
+    public function getAllUserPoubelleDate($user_id) {
+        $stmt = $this->conn->prepare("SELECT p.*, MONTH(p.created_at) AS mois, YEAR(p.created_at) AS annee, COUNT( * ) AS nombre  FROM poubelle p, user_poubelle up WHERE p.id = up.poubelle_id AND up.user_id = ? AND p.created_at BETWEEN '2017-01-01' AND '2017-12-31' GROUP BY annee, mois");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $poubelles = $stmt->get_result();
+        $stmt->close();
+        return $poubelles;
+    }
+
     /**
      * Updating poubelle
      * @param String $poubelle_id id of the poubelle

@@ -163,6 +163,37 @@ $app->get('/poubelles', 'authenticate', function() {
         });
 
 /**
+ * Listing all poubelles for date of particual user
+ * method GET
+ * url /poubelles/date         
+ */
+$app->get('/poubelles/date', 'authenticate', function() {
+            global $user_id;
+            $response = array();
+            $db = new DbHandler();
+
+            // fetching all user poubelles
+            $result = $db->getAllUserPoubelleDate($user_id);
+
+            $response["error"] = false;
+            $response["poubelle"] = array();
+
+            // looping through result and preparing poubelle array
+            while ($poubelle = $result->fetch_assoc()) {
+                $tmp = array();
+                $tmp["id"] = $poubelle["id"];
+                $tmp["createdAt"] = $poubelle["created_at"];
+                $tmp["mois"] = $poubelle["mois"];
+                $tmp["annee"] = $poubelle["annee"];
+                $tmp["nombre"] = $poubelle["nombre"];
+
+                array_push($response["poubelle"], $tmp);
+            }
+
+            echoRespnse(200, $response);
+        });
+
+/**
  * Listing single poubelle of particual user
  * method GET
  * url /poubelles/:id
