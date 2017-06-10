@@ -286,12 +286,21 @@ class DbHandler {
     /**
      * Updating poubelle
      * @param String $poubelle_id id of the poubelle
-     * @param String $sujet sujet text
-     * @param String $status status text
+     * @param String $size size integer
      */
-    public function updatePoubelle($user_id, $poubelle_id, $sujet, $status) {
-        $stmt = $this->conn->prepare("UPDATE poubelle t, user_poubelle ut set t.sujet = ?, t.status = ? WHERE t.id = ? AND t.id = ut.poubelle_id AND ut.user_id = ?");
-        $stmt->bind_param("siii", $sujet, $status, $poubelle_id, $user_id);
+    public function updatePoubelle($user_id, $size) {
+        $stmt = $this->conn->prepare(
+        "UPDATE poubelle p
+        JOIN ( 
+            SELECT * , MIN(poubelle_id) AS minID
+            FROM user_poubelle up
+            WHERE up.user_id = ?
+            AND MONTH(created_at)=MONTH(now())) AS up 
+        ON p.id = minID
+        SET size = ?");
+        
+
+        $stmt->bind_param("ii", $user_id, $size);
         $stmt->execute();
         $num_affected_rows = $stmt->affected_rows;
         $stmt->close();

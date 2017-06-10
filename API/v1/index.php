@@ -155,6 +155,7 @@ $app->get('/poubelles', 'authenticate', function() {
                 $tmp["id"] = $poubelle["id"];
                 $tmp["sujet"] = $poubelle["sujet"];
                 $tmp["status"] = $poubelle["status"];
+                $tmp["size"] = $poubelle["size"];
                 $tmp["createdAt"] = $poubelle["created_at"];
                 array_push($response["poubelle"], $tmp);
             }
@@ -256,22 +257,21 @@ $app->post('/poubelles','authenticate', function() use ($app) {
 /**
  * Updating existing poubelle
  * method PUT
- * params sujet, status
+ * params size
  * url - /poubelles/:id
  */
-$app->put('/poubelles/:id', 'authenticate', function($poubelle_id) use($app) {
+$app->put('/poubelles', 'authenticate', function() use($app) {
             // check for required params
-            verifyRequiredParams(array('sujet', 'status'));
+            verifyRequiredParams(array('size'));
 
             global $user_id;            
-            $sujet = $app->request->put('sujet');
-            $status = $app->request->put('status');
+            $size = $app->request->put('size');
 
             $db = new DbHandler();
             $response = array();
 
-            // updating sujet
-            $result = $db->updatePoubelle($user_id, $poubelle_id, $sujet, $status);
+            // updating size
+            $result = $db->updatePoubelle($user_id, $size);
             if ($result) {
                 // poubelle updated successfully
                 $response["error"] = false;

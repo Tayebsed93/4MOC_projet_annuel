@@ -1,0 +1,60 @@
+Aide d'une modification d'une poubelle spécifique
+
+/**
+ * Updating existing poubelle
+ * method PUT
+ * params sujet, status
+ * url - /poubelles/:id
+ */
+$app->put('/poubelles/:id', 'authenticate', function($poubelle_id) use($app) {
+            // check for required params
+            verifyRequiredParams(array('sujet', 'status'));
+
+            global $user_id;            
+            $sujet = $app->request->put('sujet');
+            $status = $app->request->put('status');
+
+            $db = new DbHandler();
+            $response = array();
+
+            // updating sujet
+            $result = $db->updatePoubelle($user_id, $poubelle_id, $sujet, $status);
+            if ($result) {
+                // poubelle updated successfully
+                $response["error"] = false;
+                $response["message"] = "Poubelle updated successfully";
+            } else {
+                // poubelle failed to update
+                $response["error"] = true;
+                $response["message"] = "Poubelle failed to update. Please try again!";
+            }
+            echoRespnse(200, $response);
+        });
+
+
+    /**
+     * Updating poubelle
+     * @param String $poubelle_id id of the poubelle
+     * @param String $size size text
+     */
+    public function updatePoubelle($user_id, $poubelle_id, $size) {
+        $stmt = $this->conn->prepare("UPDATE poubelle p, user_poubelle up set p.size = ? WHERE p.id = ? AND p.id = up.poubelle_id AND up.user_id = ?");
+        
+        $stmt->bind_param("sii", $size, $poubelle_id, $user_id);
+        $stmt->execute();
+        $num_affected_rows = $stmt->affected_rows;
+        $stmt->close();
+        return $num_affected_rows > 0;
+    }
+
+    UPDATE poubelle p
+JOIN ( 
+    SELECT id , MAX(id) AS event_time
+    FROM user_poubelle t2
+    WHERE t2.user_id = 2
+    GROUP BY id ) AS t2 
+ON p.id = t2.id 
+SET size = 4
+
+
+SELECT p.*, MONTH(p.created_at) AS mois, YEAR(p.created_at) AS annee ,COUNT(*) AS NB  FROM poubelle p, user_poubelle up WHERE p.id = up.poubelle_id AND up.user_id = 1 AND YEAR(p.created_at) = '2017' GROUP BY annee, mois;
