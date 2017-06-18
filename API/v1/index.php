@@ -164,37 +164,6 @@ $app->get('/poubelles', 'authenticate', function() {
         });
 
 /**
- * Listing all poubelles for date of particual user
- * method GET
- * url /poubelles/date         
- */
-$app->get('/poubelles/date', 'authenticate', function() {
-            global $user_id;
-            $response = array();
-            $db = new DbHandler();
-
-            // fetching all user poubelles
-            $result = $db->getAllUserPoubelleDate($user_id);
-
-            $response["error"] = false;
-            $response["poubelle"] = array();
-
-            // looping through result and preparing poubelle array
-            while ($poubelle = $result->fetch_assoc()) {
-                $tmp = array();
-                $tmp["id"] = $poubelle["id"];
-                $tmp["createdAt"] = $poubelle["created_at"];
-                $tmp["mois"] = $poubelle["mois"];
-                $tmp["annee"] = $poubelle["annee"];
-                $tmp["nombre"] = $poubelle["nombre"];
-
-                array_push($response["poubelle"], $tmp);
-            }
-
-            echoRespnse(200, $response);
-        });
-
-/**
  * Listing single poubelle of particual user
  * method GET
  * url /poubelles/:id
@@ -254,12 +223,49 @@ $app->post('/poubelles','authenticate', function() use ($app) {
             }            
         });
 
+
+/**
+ * Listing all poubelles for date of particual user
+ * method POST
+ * url /poubelles/date         
+ */
+$app->post('/poubelles/date', 'authenticate', function() use ($app) {
+
+            // check for required params
+            verifyRequiredParams(array('annee'));
+            $annee = $app->request->post('annee');
+
+            global $user_id;
+            $response = array();
+            $db = new DbHandler();
+
+            // fetching all user poubelles
+            $result = $db->getAllUserPoubelleDate($user_id, $annee);
+
+            $response["error"] = false;
+            $response["poubelle"] = array();
+
+            // Check to see if the final result returns false
+            if($result == false) {
+                $response['error'] = true;
+
+                echoRespnse(404, $response); // echo the response of 404?
+
+            } else {
+
+            array_push($response['poubelle'], $result);
+            echoRespnse(200, $response);
+        }
+
+        });
+
 /**
  * Updating existing poubelle
  * method PUT
  * params size
  * url - /poubelles/:id
  */
+
 $app->put('/poubelles', 'authenticate', function() use($app) {
             // check for required params
             verifyRequiredParams(array('size'));
@@ -283,6 +289,7 @@ $app->put('/poubelles', 'authenticate', function() use($app) {
             }
             echoRespnse(200, $response);
         });
+    
 
 /**
  * Deleting poubelle. Users can delete only their poubelles

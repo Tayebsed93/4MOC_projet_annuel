@@ -274,13 +274,33 @@ class DbHandler {
      * Fetching all user poubelles for date
      * @param String $user_id id of the user
      */
-    public function getAllUserPoubelleDate($user_id) {
-        $stmt = $this->conn->prepare("SELECT p.*, MONTH(p.created_at) AS mois, YEAR(p.created_at) AS annee, COUNT( * ) AS nombre  FROM poubelle p, user_poubelle up WHERE p.id = up.poubelle_id AND up.user_id = ? AND p.created_at BETWEEN '2017-01-01' AND '2017-12-31' GROUP BY annee, mois");
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $poubelles = $stmt->get_result();
-        $stmt->close();
-        return $poubelles;
+    public function getAllUserPoubelleDate($user_id, $annee) {
+        $stmt = $this->conn->prepare("SELECT p.id, p.created_at, p.size, MONTH(p.created_at) AS mois, YEAR(p.created_at) AS annee, COUNT( * ) AS nombre  FROM poubelle p, user_poubelle up WHERE p.id = up.poubelle_id AND up.user_id = ? AND YEAR(p.created_at) = ? GROUP BY annee, mois");
+        $stmt->bind_param("ii", $user_id, $annee);
+         if ($stmt->execute()) {
+            $res = array();
+            $stmt->store_result();
+            $stmt->bind_result($id, $created_at, $size, $mois, $annee, $nombre);
+            // TODO
+ 
+            while($stmt->fetch())
+            {           
+                $temp = array();
+                $temp["id"] = $id;
+                $temp["created_at"] = $created_at;
+                $temp["size"] = $size;
+                $temp["mois"] = $mois;
+                $temp["annee"] = $annee;
+                $temp["nombre"] = $nombre;
+                
+                array_push($res, $temp);
+            }
+
+            $stmt->close();
+            return $res;
+        } else {
+            return NULL;
+        }
     }
 
     /**
